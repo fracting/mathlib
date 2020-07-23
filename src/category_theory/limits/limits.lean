@@ -157,7 +157,7 @@ let w' : e.inverse ⋙ F ≅ G := (iso_whisker_left e.inverse w).symm ≪≫ inv
   begin
     apply hom_ext P, intros j,
     dsimp,
-    simp only [limits.cone.whisker_π, limits.cones.postcompose_obj_π, fac, whisker_left_app,
+    simp only [limits.cone.whisker_π_app, limits.cones.postcompose_obj_π_app, fac,
       assoc, id_comp, inv_fun_id_assoc_hom_app, fac_assoc, nat_trans.comp_app],
     rw [counit_functor, ←functor.comp_map, w.hom.naturality],
     simp,
@@ -468,8 +468,8 @@ let w' : e.inverse ⋙ F ≅ G := (iso_whisker_left e.inverse w).symm ≪≫ inv
   begin
     apply hom_ext P, intros j,
     dsimp,
-    simp only [limits.cocone.whisker_ι, fac, inv_fun_id_assoc_inv_app, whisker_left_app, assoc,
-      comp_id, limits.cocones.precompose_obj_ι, fac_assoc, nat_trans.comp_app],
+    simp only [limits.cocone.whisker_ι_app, fac, inv_fun_id_assoc_inv_app, assoc,
+      comp_id, limits.cocones.precompose_obj_ι_app, fac_assoc, nat_trans.comp_app],
     rw [←functor_unit, ←functor.comp_map, ←w.inv.naturality_assoc],
     dsimp,
     simp,
@@ -728,13 +728,13 @@ def has_limit_of_iso {F G : J ⥤ C} [has_limit F] (α : F ≅ G) : has_limit G 
   { lift := λ s, limit.lift F ((cones.postcompose α.inv).obj s),
     fac' := λ s j,
     begin
-      rw [cones.postcompose_obj_π, nat_trans.comp_app, limit.cone_π, ←category.assoc, limit.lift_π],
+      rw [cones.postcompose_obj_π_app, limit.cone_π, ←category.assoc, limit.lift_π],
       simp
     end,
     uniq' := λ s m w,
     begin
       apply limit.hom_ext, intro j,
-      rw [limit.lift_π, cones.postcompose_obj_π, nat_trans.comp_app, ←nat_iso.app_inv, iso.eq_comp_inv],
+      rw [limit.lift_π, cones.postcompose_obj_π_app, ←nat_iso.app_inv, iso.eq_comp_inv],
       simpa using w j
     end } }
 
@@ -1083,14 +1083,13 @@ def has_colimit_of_iso {F G : J ⥤ C} [has_colimit F] (α : G ≅ F) : has_coli
   { desc := λ s, colimit.desc F ((cocones.precompose α.inv).obj s),
     fac' := λ s j,
     begin
-      rw [cocones.precompose_obj_ι, nat_trans.comp_app, colimit.cocone_ι],
+      rw [cocones.precompose_obj_ι_app, colimit.cocone_ι],
       rw [category.assoc, colimit.ι_desc, ←nat_iso.app_hom, ←iso.eq_inv_comp], refl
     end,
     uniq' := λ s m w,
     begin
       apply colimit.hom_ext, intro j,
-      rw [colimit.ι_desc, cocones.precompose_obj_ι, nat_trans.comp_app, ←nat_iso.app_inv,
-        iso.eq_inv_comp],
+      rw [colimit.ι_desc, cocones.precompose_obj_ι_app, ←nat_iso.app_inv, iso.eq_inv_comp],
       simpa using w j
     end } }
 
