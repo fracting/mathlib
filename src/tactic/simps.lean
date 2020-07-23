@@ -193,7 +193,7 @@ library_note "custom simps projection"
 meta def simps_get_projection_exprs (e : environment) (tgt : expr)
   (rhs : expr) : tactic $ list $ expr × name × expr := do
   let params := get_app_args tgt, -- the parameters of the structure
-  guard ((get_app_args rhs).take params.length = params) <|> fail "unreachable code (1)",
+  guard ((get_app_args rhs).take params.length = params) <|> fail!"unreachable code (1)\n{rhs}\n{get_app_args rhs}\n{params}",
   let str := tgt.get_app_fn.const_name,
   projs ← e.structure_fields_full str,
   let rhs_args := (get_app_args rhs).drop params.length, -- the fields of the object
