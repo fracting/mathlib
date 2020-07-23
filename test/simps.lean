@@ -3,6 +3,7 @@ import tactic.simps
 set_option trace.simps.verbose true
 
 open function tactic expr
+open tactic.transparency (none)
 
 
 structure equiv (α : Sort*) (β : Sort*) :=
@@ -26,7 +27,7 @@ namespace foo
 
 -- set_option trace.app_builder true
 
-@[simps] protected def rfl {α} : α ≃ α :=
+@[simps {simp_rhs := ff}] protected def rfl {α} : α ≃ α :=
 ⟨id, λ x, x, λ x, rfl, λ x, rfl⟩
 
 /- simps adds declarations -/
@@ -60,7 +61,7 @@ classical.choice ⟨foo.rfl⟩
 run_cmd do
   success_if_fail_with_msg (simps_tac `foo.bar1)
     "Invalid `simps` attribute. Target is not a structure",
-  success_if_fail_with_msg (simps_tac `foo.bar2)
+  success_if_fail_with_msg (simps_tac `foo.bar2 {rhs_md := none})
     "Invalid `simps` attribute. The body is not a constructor application:
 prod.map (λ (x : ℕ), x + 2) (λ (y : ℤ), y - 3) (3, 4)
 Possible solution: add option {rhs_md := semireducible}.",
@@ -78,7 +79,7 @@ Possible solution: add option {rhs_md := semireducible}.",
 /- test `rhs_md` option -/
 def rfl2 {α} : α ≃ α := foo.rfl
 
-run_cmd success_if_fail (simps_tac `foo.rfl2)
+run_cmd success_if_fail (simps_tac `foo.rfl2 {rhs_md := none})
 attribute [simps {rhs_md := semireducible}] foo.rfl2
 
 /- test `fully_applied` option -/
@@ -108,7 +109,7 @@ namespace count_nested
 @[simps {attrs := [`simp, `norm]}] def nested1 : my_prod ℕ $ my_prod ℤ ℕ :=
 ⟨2, -1, 1⟩
 
-@[simps {attrs := []}] def nested2 : ℕ × my_prod ℕ ℕ :=
+@[simps {attrs := [], rhs_md := none}] def nested2 : ℕ × my_prod ℕ ℕ :=
 ⟨2, myprod.map nat.succ nat.pred ⟨1, 2⟩⟩
 
 end count_nested
@@ -144,7 +145,7 @@ def refl_with_data {α} : equiv_plus_data α α :=
   data := rfl,
   ..foo.rfl }
 
-@[simps]
+@[simps {rhs_md := none}]
 def refl_with_data' {α} : equiv_plus_data α α :=
 { P := λ f, f = id,
   data := rfl,
@@ -241,7 +242,7 @@ run_cmd do
     "Invalid simp-lemma specify.specify1_foo_fst. Projection foo doesn't exist.",
   success_if_fail_with_msg (simps_tac `specify.specify1 {} ["snd_bar"])
     "Invalid simp-lemma specify.specify1_snd_bar. Projection bar doesn't exist.",
-  success_if_fail_with_msg (simps_tac `specify.specify5 {} ["snd_snd"])
+  success_if_fail_with_msg (simps_tac `specify.specify5 {rhs_md := none} ["snd_snd"])
     "Invalid simp-lemma specify.specify5_snd_snd. The given definition is not a constructor application:
 prod.map (λ (x : ℕ), x) (λ (y : ℕ), y) (2, 3)
 Possible solution: add option {rhs_md := semireducible}."
