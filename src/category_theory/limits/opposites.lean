@@ -65,7 +65,8 @@ def has_limits_op_of_has_colimits [has_colimits C] : has_limits Cᵒᵖ :=
 If `F.left_op : Jᵒᵖ ⥤ C` has a chosen limit, we can construct a chosen colimit for `F : J ⥤ Cᵒᵖ`.
 -/
 def has_colimit_of_has_limit_left_op [has_limit F.left_op] : has_colimit F :=
-has_limit.mk { cocone := cocone_of_cone_left_op (limit.cone F.left_op),
+has_colimit.mk
+{ cocone := cocone_of_cone_left_op (limit.cone F.left_op),
   is_colimit :=
   { desc := λ s, (limit.lift F.left_op (cone_left_op_of_cocone s)).op,
     fac' := λ s j,
