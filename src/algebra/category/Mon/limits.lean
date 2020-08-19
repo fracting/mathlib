@@ -16,6 +16,8 @@ the underlying types are just the limits in the category of types.
 
 -/
 
+noncomputable theory
+
 open category_theory
 open category_theory.limits
 
@@ -49,17 +51,17 @@ def sections_submonoid (F : J ⥤ Mon) :
 
 @[to_additive AddMon.limit_add_monoid]
 instance limit_monoid (F : J ⥤ Mon) :
-  monoid (limit (F ⋙ forget Mon)) :=
+  monoid (types.limit_ (F ⋙ forget Mon)).X :=
 (sections_submonoid F).to_monoid
 
 /-- `limit.π (F ⋙ forget Mon) j` as a `monoid_hom`. -/
 @[to_additive AddMon.limit_π_add_monoid_hom
   "`limit.π (F ⋙ forget AddMon) j` as an `add_monoid_hom`."]
 def limit_π_monoid_hom (F : J ⥤ Mon) (j) :
-  limit (F ⋙ forget Mon) →* (F ⋙ forget Mon).obj j :=
-{ to_fun := limit.π (F ⋙ forget Mon) j,
-  map_one' := by { simp only [types.types_limit_π], refl },
-  map_mul' := λ x y, by { simp only [types.types_limit_π], refl } }
+  (types.limit_ (F ⋙ forget Mon)).X →* (F ⋙ forget Mon).obj j :=
+{ to_fun := (types.limit_ (F ⋙ forget Mon)).π.app j,
+  map_one' := by { refl },
+  map_mul' := λ x y, by { refl } }
 
 namespace has_limits
 -- The next two definitions are used in the construction of `has_limits Mon`.
@@ -72,11 +74,11 @@ Construction of a limit cone in `Mon`.
 -/
 @[to_additive AddMon.has_limits.limit "(Internal use only; use the limits API.)"]
 def limit (F : J ⥤ Mon) : cone F :=
-{ X := Mon.of (limit (F ⋙ forget _)),
+{ X := Mon.of (types.limit_ (F ⋙ forget _)).X,
   π :=
   { app := limit_π_monoid_hom F,
     naturality' := λ j j' f,
-      monoid_hom.coe_inj ((limit.cone (F ⋙ forget _)).π.naturality f) } }
+      monoid_hom.coe_inj ((types.limit_ (F ⋙ forget _)).π.naturality f) } }
 
 /--
 Witness that the limit cone in `Mon` is a limit cone.
@@ -86,7 +88,7 @@ Witness that the limit cone in `Mon` is a limit cone.
 def limit_is_limit (F : J ⥤ Mon) : is_limit (limit F) :=
 begin
   refine is_limit.of_faithful
-    (forget Mon) (limit.is_limit _)
+    (forget Mon) (types.limit_is_limit_ _)
     (λ s, ⟨_, _, _⟩) (λ s, rfl); tidy,
 end
 
@@ -98,7 +100,7 @@ open has_limits
 @[to_additive AddMon.has_limits]
 instance has_limits : has_limits Mon :=
 { has_limits_of_shape := λ J 𝒥,
-  { has_limit := λ F, by exactI
+  { has_limit := λ F, by exactI has_limit.mk
     { cone     := limit F,
       is_limit := limit_is_limit F } } }
 
@@ -111,7 +113,7 @@ instance forget_preserves_limits : preserves_limits (forget Mon) :=
 { preserves_limits_of_shape := λ J 𝒥,
   { preserves_limit := λ F,
     by exactI preserves_limit_of_preserves_limit_cone
-      (limit.is_limit F) (limit.is_limit (F ⋙ forget _)) } }
+      (limit_is_limit F) (types.limit_is_limit_ (F ⋙ forget _)) } }
 
 end Mon
 
@@ -126,7 +128,7 @@ by { change comm_monoid (F.obj j), apply_instance }
 
 @[to_additive AddCommMon.limit_add_comm_monoid]
 instance limit_comm_monoid (F : J ⥤ CommMon) :
-  comm_monoid (limit (F ⋙ forget CommMon)) :=
+  comm_monoid (types.limit_ (F ⋙ forget CommMon)).X :=
 @submonoid.to_comm_monoid (Π j, F.obj j) _
   (Mon.sections_submonoid (F ⋙ forget₂ CommMon Mon))
 
@@ -140,12 +142,12 @@ and then reuse the existing limit.
 instance (F : J ⥤ CommMon) : creates_limit F (forget₂ CommMon Mon) :=
 creates_limit_of_reflects_iso (λ c' t,
 { lifted_cone :=
-  { X := CommMon.of (limit (F ⋙ forget CommMon)),
+  { X := CommMon.of (types.limit_ (F ⋙ forget CommMon)).X,
     π :=
     { app := Mon.limit_π_monoid_hom (F ⋙ forget₂ CommMon Mon),
       naturality' := (Mon.has_limits.limit (F ⋙ forget₂ _ _)).π.naturality, } },
-  valid_lift := is_limit.unique_up_to_iso (limit.is_limit _) t,
-  makes_limit := is_limit.of_faithful (forget₂ CommMon Mon) (limit.is_limit _)
+  valid_lift := is_limit.unique_up_to_iso (Mon.has_limits.limit_is_limit _) t,
+  makes_limit := is_limit.of_faithful (forget₂ CommMon Mon) (Mon.has_limits.limit_is_limit _)
     (λ s, _) (λ s, rfl) })
 
 /-- The category of commutative monoids has all limits. -/
@@ -169,9 +171,7 @@ types could have been computed instead as limits in the category of types.)
 -/
 @[to_additive AddCommMon.forget_preserves_limits]
 instance forget_preserves_limits : preserves_limits (forget CommMon) :=
-{ preserves_limits_of_shape := λ J 𝒥,
-  { preserves_limit := λ F,
-    by exactI preserves_limit_of_preserves_limit_cone
-      (limit.is_limit F) (limit.is_limit (F ⋙ forget _)) } }
+{ preserves_limits_of_shape := λ J 𝒥, by exactI
+  { preserves_limit := λ F, limits.comp_preserves_limit (forget₂ CommMon Mon) (forget Mon) } }
 
 end CommMon
