@@ -24,27 +24,24 @@ def foo [inhabited M'] (hG : local_invariant_prop G G' P) :
     ∀ (x : M), x ∈ U → lift_prop_at P (extend U.1 f) x,
   res := begin
     intros U V i f h x hx,
-    have hUV : U ≤ V := sorry, -- should be true?  don't know how to extract it from `i`
+    have hUV : U ≤ V := category_theory.le_of_hom i,
     refine lift_prop_at_congr_of_eventually_eq hG (h x (hUV hx)) _,
     refine filter.eventually_eq_of_mem (mem_nhds_sets U.2 hx) _,
     intros y hy,
     unfold extend,
     rw dif_pos hy,
     rw dif_pos (hUV hy),
-    -- should be true?  don't know how to extract it from `i`
-    sorry
+    refl,
   end,
   locality := begin
     intros V f h x hx,
     rcases h ⟨x, hx⟩ with ⟨U, hx, i, hU⟩,
-    have hUV : U ≤ V := sorry, -- should be true?  don't know how to extract it from `i`
-    simp at hU hx,
+    have hUV : U ≤ V := category_theory.le_of_hom i,
     refine lift_prop_at_congr_of_eventually_eq hG (hU x hx) _,
     refine filter.eventually_eq_of_mem (mem_nhds_sets U.2 hx) _,
     intros y hy,
     unfold extend,
     rw dif_pos hy,
     rw dif_pos (hUV hy),
-    -- should be true?  don't know how to extract it from `i`
-    sorry
+    refl,
   end }
