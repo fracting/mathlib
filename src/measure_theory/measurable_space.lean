@@ -923,10 +923,11 @@ def sum_prod_sum (α β γ δ)
 
 end measurable_equiv
 
-
-namespace measurable_equiv
-
-end measurable_equiv
+/-- A pi-system is a collection of subsets of `α` that is closed under intersections of sets that
+  are not disjoint. Usually it is also required that the collection is nonempty, but we don't do
+  that here. -/
+def is_pi_system {α} (C : set (set α)) : Prop :=
+∀ s t ∈ C, (s ∩ t : set α).nonempty → s ∩ t ∈ C
 
 namespace measurable_space
 
@@ -1061,7 +1062,7 @@ lemma generate_has_subset_generate_measurable {C : set (set α)} {s : set α}
 generate_le (of_measurable_space (generate_from C)) (λ t, is_measurable_generate_from) s hs
 
 lemma generate_inter {s : set (set α)}
-  (hs : ∀ (t₁ ∈ s) (t₂ ∈ s), (t₁ ∩ t₂ : set α).nonempty → t₁ ∩ t₂ ∈ s) {t₁ t₂ : set α}
+  (hs : is_pi_system s) {t₁ t₂ : set α}
   (ht₁ : (generate s).has t₁) (ht₂ : (generate s).has t₂) : (generate s).has (t₁ ∩ t₂) :=
 have generate s ≤ (generate s).restrict_on ht₂,
   from generate_le _ $ assume s₁ hs₁,
@@ -1071,7 +1072,7 @@ have generate s ≤ (generate s).restrict_on ht₂,
       show (generate s).has (s₂ ∩ s₁), from
         (s₂ ∩ s₁).eq_empty_or_nonempty.elim
         (λ h,  h.symm ▸ generate_has.empty)
-        (λ h, generate_has.basic _ (hs _ hs₂ _ hs₁ h)),
+        (λ h, generate_has.basic _ (hs _ _ hs₂ hs₁ h)),
   have (generate s).has (t₂ ∩ s₁), from this _ ht₂,
   show (generate s).has (s₁ ∩ t₂), by rwa [inter_comm],
 this _ ht₁
@@ -1082,8 +1083,7 @@ this _ ht₁
   This result is known as the π-λ theorem.
   A collection of sets closed under binary intersection is called a "π-system" if it is non-empty.
 -/
-lemma generate_from_eq {s : set (set α)}
-  (hs : ∀ (t₁ ∈ s) (t₂ ∈ s), (t₁ ∩ t₂ : set α).nonempty → t₁ ∩ t₂ ∈ s) :
+lemma generate_from_eq {s : set (set α)} (hs : is_pi_system s) :
   generate_from s = (generate s).to_measurable_space (assume t₁ t₂, generate_inter hs) :=
 le_antisymm
   (generate_from_le $ assume t ht, generate_has.basic t ht)
@@ -1095,12 +1095,12 @@ end dynkin_system
 
 lemma induction_on_inter {C : set α → Prop} {s : set (set α)} [m : measurable_space α]
   (h_eq : m = generate_from s)
-  (h_inter : ∀ (t₁ ∈ s) (t₂ ∈ s), (t₁ ∩ t₂ : set α).nonempty → t₁ ∩ t₂ ∈ s)
+  (h_inter : is_pi_system s)
   (h_empty : C ∅) (h_basic : ∀t∈s, C t) (h_compl : ∀t, is_measurable t → C t → C tᶜ)
   (h_union : ∀f:ℕ → set α, pairwise (disjoint on f) →
     (∀i, is_measurable (f i)) → (∀i, C (f i)) → C (⋃i, f i)) :
   ∀{t}, is_measurable t → C t :=
-have eq : m.is_measurable = dynkin_system.generate_has s,
+have eq : is_measurable = dynkin_system.generate_has s,
   by { rw [h_eq, dynkin_system.generate_from_eq h_inter], refl },
 assume t ht,
 have dynkin_system.generate_has s t, by rwa [eq] at ht,
