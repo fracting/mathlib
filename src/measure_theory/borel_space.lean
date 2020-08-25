@@ -684,15 +684,9 @@ begin
       measurable_const }
 end
 
-lemma measurable.ennreal_add {α : Type*} [measurable_space α] {f g : α → ennreal} :
-  measurable f → measurable g → measurable (λa, f a + g a) :=
-begin
-  refine ennreal.measurable_of_measurable_nnreal_nnreal (+) _ _ _,
-  { simp only [ennreal.coe_add.symm],
-    exact ennreal.measurable_coe.comp measurable_add },
-  { simp [measurable_const] },
-  { simp [measurable_const] }
-end
+lemma measurable.ennreal_add {α : Type*} [measurable_space α] {f g : α → ennreal}
+  (hf : measurable f) (hg : measurable g) : measurable (λa, f a + g a) :=
+hf.add hg
 
 lemma measurable.ennreal_sub {α : Type*} [measurable_space α] {f g : α → ennreal} :
   measurable f → measurable g → measurable (λa, f a - g a) :=
