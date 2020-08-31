@@ -5,6 +5,7 @@ Author: Anne Baanen
 -/
 
 import ring_theory.algebraic
+import ring_theory.localization
 
 /-!
 # Ideals over/under ideals
@@ -164,5 +165,36 @@ lemma integral_closure.is_maximal_of_is_maximal_comap
 is_maximal_of_is_integral_of_is_maximal_comap (λ x, integral_closure.is_integral x) I hI
 
 end integral_domain
+
+section going_up
+
+variables {S : Type*} [comm_ring S] [algebra R S]
+
+/-- `comap (algebra_map R S)` is a surjection from the prime spec of `R` to prime spec of `S` -/
+theorem lying_over (H : ∀ x : S, is_integral R x) (P : ideal R) [is_prime P]
+  : ∃ (Q : ideal S), is_prime Q ∧ P = Q.comap (algebra_map R S) :=
+begin
+  let Rₚ := localization P.prime_compl,
+  let f := localization.of P.prime_compl,
+  let Sₚ := localization (algebra_map_submonoid S P.prime_compl),
+  let g := localization.of (algebra_map_submonoid S P.prime_compl),
+  haveI : algebra Rₚ Sₚ := localization_algebra P.prime_compl f g,
+  let Pₚ := local_ring.maximal_ideal Rₚ,
+  -- haveI : is_maximal Pₚ := local_ring.is_max
+  by_cases hPₚ : map (algebra_map Rₚ Sₚ) Pₚ = ⊤,
+  {
+    exfalso, sorry,
+  },
+  {
+    obtain ⟨Qₚ : ideal Sₚ, ⟨Qₚ_maximal, hQₚ⟩⟩ := exists_le_maximal _ hPₚ,
+    use comap g.to_map Qₚ,
+    have h₁ : Pₚ ≤ comap (algebra_map Rₚ Sₚ) Qₚ := le_trans le_comap_map (comap_mono hQₚ),
+    have h₂ : comap (algebra_map Rₚ Sₚ) Qₚ ≠ ⊤ := comap_ne_top _ Qₚ_maximal.1,
+    have : Pₚ = comap _ Qₚ := is_maximal.eq_of_le (local_ring.maximal_ideal.is_maximal Rₚ) h₂ h₁,
+
+  }
+end
+
+end going_up
 
 end ideal
