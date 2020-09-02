@@ -170,7 +170,15 @@ section going_up
 
 local attribute [instance] classical.prop_decidable
 
-variables {S : Type*} [comm_ring S] [algebra R S]
+variables {S : Type*} [comm_ring S] [nontrivial S] [algebra R S]
+
+lemma map_ne_top_of_is_integral_of_is_maximal
+  (hRS : ∀ (x : S), is_integral R x) (I : ideal R) [hI : I.is_maximal]
+  : I.map (algebra_map R S) ≠ ⊤ :=
+begin
+  intro h,
+  rw eq_top_iff_one at h,
+end
 
 /-- `comap (algebra_map R S)` is a surjection from the prime spec of `R` to prime spec of `S` -/
 theorem lying_over (H : ∀ x : S, is_integral R x) (P : ideal R) [is_prime P]
@@ -179,16 +187,31 @@ begin
   let Rₚ := localization P.prime_compl,
   let f := localization.of P.prime_compl,
   let Sₚ := localization (algebra_map_submonoid S P.prime_compl),
-  let g := localization.of (algebra_map_submonoid S P.prime_compl),
-  let ϕ := (@algebra_map Rₚ Sₚ _ _ (localization_algebra P.prime_compl f g)),
-  --haveI : algebra Rₚ Sₚ := localization_algebra P.prime_compl f g,
-  let Pₚ := local_ring.maximal_ideal Rₚ,
-  -- haveI : is_maximal Pₚ := local_ring.is_max
-  by_cases hPₚ : map ϕ Pₚ = ⊤,
+  by_cases triv : (1 : Sₚ) = 0,
   {
-    exfalso,
     sorry,
   },
+  haveI hSₚ : nontrivial Sₚ := nontrivial_of_ne 1 0 triv,
+  let g := localization.of (algebra_map_submonoid S P.prime_compl),
+  let ϕ := (@algebra_map Rₚ Sₚ _ _ (localization_algebra P.prime_compl f g)),
+  let Pₚ := local_ring.maximal_ideal Rₚ,
+  have hPₚ : map ϕ Pₚ ≠ ⊤, {
+    refine @map_ne_top_of_is_integral_of_is_maximal Rₚ _ Sₚ _ _ (localization_algebra P.prime_compl f g) _ _ _,
+    refine is_integral_localization f g _ H,
+  },
+  -- by_cases hPₚ : map ϕ Pₚ = ⊤,
+  -- {
+  --   exfalso,
+  --   rw eq_top_iff_one at hPₚ,
+  --   erw submodule.mem_span at hPₚ,
+  --   obtain ⟨Q : ideal Sₚ, hQ⟩ := exists_maximal,
+  --   swap,
+  --   by apply_instance,
+  --   specialize hPₚ Q _,
+  --   rw ← eq_top_iff_one at hPₚ,
+  --   refine hQ.1 hPₚ,
+  --   sorry,
+  -- },
   {
     obtain ⟨Qₚ : ideal Sₚ, ⟨Qₚ_maximal, hQₚ⟩⟩ := exists_le_maximal _ hPₚ,
     haveI : is_maximal Qₚ := Qₚ_maximal,
@@ -206,7 +229,7 @@ begin
         exact this,
       },
       rw [← comap_comap, ← this],
-      exact (localization.at_prime_comap_maximal_ideal P).symm,
+      exact localization.at_prime.comap_maximal_ideal.symm,
     }
   }
 end
